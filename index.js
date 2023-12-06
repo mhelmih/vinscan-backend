@@ -1,7 +1,11 @@
 // src/routes/index.js
 import express from 'express';
 import cors from 'cors';
-import { login, register, loginWithGoogle } from './controllers/authController';
+import {
+  login,
+  register,
+  loginWithGoogle,
+} from './controllers/authController.js';
 
 const app = express();
 const PORT = 5000;
