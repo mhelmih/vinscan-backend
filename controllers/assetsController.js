@@ -9,6 +9,7 @@ import {
   getDocs,
   updateDoc,
   deleteDoc,
+  serverTimestamp,
 } from 'firebase/firestore';
 
 const db = getFirestore(firebase);
@@ -16,7 +17,8 @@ const db = getFirestore(firebase);
 export const createAsset = async (req, res) => {
   try {
     const data = req.body;
-    await addDoc(collection(db, 'assets'), data);
+    const createdAt = serverTimestamp();
+    await addDoc(collection(db, 'assets'), { ...data, createdAt });
     res.status(200).send('asset created successfully');
   } catch (error) {
     res.status(400).send(error.message);
