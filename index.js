@@ -1,4 +1,3 @@
-// src/routes/index.js
 import express from 'express';
 import cors from 'cors';
 import {
@@ -6,7 +5,6 @@ import {
   register,
   loginWithGoogle,
 } from './controllers/authController.js';
-
 import {
   createAsset,
   getAssets,

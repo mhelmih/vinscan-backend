@@ -1,13 +1,26 @@
 import { initializeApp } from 'firebase/app';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+const {
+  API_KEY,
+  AUTH_DOMAIN,
+  PROJECT_ID,
+  STORAGE_BUCKET,
+  MESSAGING_SENDER_ID,
+  APP_ID,
+  MEASUREMENT_ID,
+} = process.env;
 
 const firebaseConfig = {
-  apiKey: 'AIzaSyBl5pmzZiAqApUmQVtRW13fZWx2ugOoVNQ',
-  authDomain: 'vinscan-3b689.firebaseapp.com',
-  projectId: 'vinscan-3b689',
-  storageBucket: 'vinscan-3b689.appspot.com',
-  messagingSenderId: '798378700635',
-  appId: '1:798378700635:web:1781bbefae452b3b5cb47e',
-  measurementId: 'G-HWDTWENFMM',
+  apiKey: API_KEY,
+  authDomain: AUTH_DOMAIN,
+  projectId: PROJECT_ID,
+  storageBucket: STORAGE_BUCKET,
+  messagingSenderId: MESSAGING_SENDER_ID,
+  appId: APP_ID,
+  measurementId: MEASUREMENT_ID,
 };
 
 const firebaseApp = initializeApp(firebaseConfig);

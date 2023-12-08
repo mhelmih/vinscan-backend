@@ -13,7 +13,7 @@ import {
 
 const db = getFirestore(firebase);
 
-export const createAsset = async (req, res, next) => {
+export const createAsset = async (req, res) => {
   try {
     const data = req.body;
     await addDoc(collection(db, 'assets'), data);
@@ -23,7 +23,7 @@ export const createAsset = async (req, res, next) => {
   }
 };
 
-export const getAssets = async (req, res, next) => {
+export const getAssets = async (req, res) => {
   try {
     const assets = await getDocs(collection(db, 'assets'));
     const assetArray = [];
@@ -32,12 +32,12 @@ export const getAssets = async (req, res, next) => {
       res.status(400).send('No assets found');
     } else {
       assets.forEach((doc) => {
-        const asset = new asset(
+        const asset = new Assets(
           doc.id,
-          doc.data().name,
-          doc.data().price,
-          doc.data().retailer,
-          doc.data().amountInStock,
+          doc.data().category,
+          doc.data().subCategory,
+          doc.data().amount,
+          doc.data().createdAt,
         );
         assetArray.push(asset);
       });
@@ -49,7 +49,7 @@ export const getAssets = async (req, res, next) => {
   }
 };
 
-export const getAsset = async (req, res, next) => {
+export const getAsset = async (req, res) => {
   try {
     const id = req.params.id;
     const asset = doc(db, 'assets', id);
@@ -64,7 +64,7 @@ export const getAsset = async (req, res, next) => {
   }
 };
 
-export const updateAsset = async (req, res, next) => {
+export const updateAsset = async (req, res) => {
   try {
     const id = req.params.id;
     const data = req.body;
@@ -76,7 +76,7 @@ export const updateAsset = async (req, res, next) => {
   }
 };
 
-export const deleteAsset = async (req, res, next) => {
+export const deleteAsset = async (req, res) => {
   try {
     const id = req.params.id;
     await deleteDoc(doc(db, 'assets', id));

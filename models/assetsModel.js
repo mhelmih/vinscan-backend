@@ -1,10 +1,10 @@
 class Assets {
-  constructor(id, name, price, retailer, amountInStock) {
+  constructor(id, category, subCategory, amount, createdAt) {
     (this.id = id),
-      (this.name = name),
-      (this.price = price),
-      (this.retailer = retailer),
-      (this.amountInStock = amountInStock);
+      (this.category = category),
+      (this.subCategory = subCategory),
+      (this.amount = amount),
+      (this.createdAt = createdAt);
   }
 }
 
