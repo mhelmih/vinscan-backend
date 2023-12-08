@@ -39,7 +39,7 @@ export const getAssets = async (req, res) => {
           doc.data().category,
           doc.data().subCategory,
           doc.data().amount,
-          doc.data().createdAt,
+          doc.data().createdAt.toDate(),
         );
         assetArray.push(asset);
       });
