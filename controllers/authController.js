@@ -1,4 +1,3 @@
-// src/controllers/authController.js
 import {
   getAuth,
   signInWithEmailAndPassword,
@@ -6,7 +5,7 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
 } from 'firebase/auth';
-import { firebaseApp } from '../firebase/config.js';
+import firebaseApp from '../firebase.js';
 
 const auth = getAuth(firebaseApp);
 
