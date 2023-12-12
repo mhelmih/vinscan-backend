@@ -1,7 +1,6 @@
-import firebase from '../firebase.js';
+import { db } from '../firebase.js';
 import Assets from '../models/assetsModel.js';
 import {
-  getFirestore,
   collection,
   doc,
   addDoc,
@@ -11,8 +10,6 @@ import {
   deleteDoc,
   serverTimestamp,
 } from 'firebase/firestore';
-
-const db = getFirestore(firebase);
 
 export const createAsset = async (req, res) => {
   try {

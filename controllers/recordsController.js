@@ -1,7 +1,6 @@
-import firebase from '../firebase.js';
+import { db } from '../firebase.js';
 import Records from '../models/recordsModel.js';
 import {
-  getFirestore,
   collection,
   doc,
   addDoc,
@@ -12,8 +11,6 @@ import {
   serverTimestamp,
 } from 'firebase/firestore';
 
-const db = getFirestore(firebase);
-
 export const createRecord = async (req, res) => {
   try {
     const data = req.body;
@@ -23,7 +20,7 @@ export const createRecord = async (req, res) => {
   } catch (error) {
     res.status(400).send(error.message);
   }
-};
+}; 
 
 export const getRecords = async (req, res) => {
   try {

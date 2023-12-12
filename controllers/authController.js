@@ -5,7 +5,9 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
 } from 'firebase/auth';
-import firebaseApp from '../firebase.js';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { firebaseApp } from '../firebase.js';
+import { db } from '../firebase.js';
 
 const auth = getAuth(firebaseApp);
 
@@ -30,16 +32,30 @@ const register = async (req, res) => {
   const { email, password } = req.body;
 
   try {
+    // Register the user with Firebase Authentication
     const userCredential = await createUserWithEmailAndPassword(
       auth,
       email,
       password,
     );
     const user = userCredential.user;
-    res.send({ message: 'User registered successfully', uid: user.uid });
+
+    // Use the user's UID as the Firestore document ID
+    const userDocRef = doc(db, 'users', user.uid);
+
+    // Set the data for the user document
+    await setDoc(userDocRef, {
+      email: user.email,
+      createdAt: serverTimestamp(),
+    });
+
+    res.send({
+      message: 'User registered successfully',
+      uid: user.uid,
+    });
   } catch (error) {
     console.error(error);
-    res.status(500).send({ error: 'Registration failed' });
+    res.status(500).send(error.message);
   }
 };
 
