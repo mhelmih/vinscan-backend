@@ -68,7 +68,7 @@ const loginWithGoogle = async (req, res) => {
     res.send({ token: 'token', uid: user.uid });
   } catch (error) {
     console.error(error);
-    res.status(401).send({ error: 'Google login failed' });
+    res.status(401).send(error.message);
   }
 };
 
