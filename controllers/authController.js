@@ -1,15 +1,11 @@
 import {
-  getAuth,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   GoogleAuthProvider,
   signInWithPopup,
 } from 'firebase/auth';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
-import { firebaseApp } from '../firebase.js';
-import { db } from '../firebase.js';
-
-const auth = getAuth(firebaseApp);
+import { db, auth } from '../firebase.js';
 
 const login = async (req, res) => {
   const { email, password } = req.body;
