@@ -34,11 +34,11 @@ app.post('/login', login);
 app.post('/register', register);
 app.post('/logingoogle', loginWithGoogle);
 
-app.post('/assets', createAsset);
-app.get('/assets', getAssets);
-app.get('/assets/:id', getAsset);
-app.put('/assets/:id', updateAsset);
-app.delete('/assets/:id', deleteAsset);
+app.post('/:userId/assets', createAsset);
+app.get('/:userId/assets', getAssets);
+app.get('/:userId/assets/:assetId', getAsset);
+app.put('/:userId/assets/:assetId', updateAsset);
+app.delete('/:userId/assets/:assetId', deleteAsset);
 
 app.post('/records', createRecord);
 app.get('/records', getRecords);
