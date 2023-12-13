@@ -40,11 +40,11 @@ app.get('/:userId/assets/:assetId', getAsset);
 app.put('/:userId/assets/:assetId', updateAsset);
 app.delete('/:userId/assets/:assetId', deleteAsset);
 
-app.post('/records', createRecord);
-app.get('/records', getRecords);
-app.get('/records/:id', getRecord);
-app.put('/records/:id', updateRecord);
-app.delete('/records/:id', deleteRecord);
+app.post('/:userId/records', createRecord);
+app.get('/:userId/records', getRecords);
+app.get('/:userId/records/:recordId', getRecord);
+app.put('/:userId/records/:recordId', updateRecord);
+app.delete('/:userId/records/:recordId', deleteRecord);
 
 app.listen(PORT, () => {
   console.log(`Server up and running on port http://localhost:${PORT}`);

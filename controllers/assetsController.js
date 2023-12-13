@@ -59,15 +59,15 @@ export const getAsset = async (req, res) => {
     const assetRef = doc(db, 'users', userId, 'assets', assetId);
     const assetDoc = await getDoc(assetRef);
 
-    if (!assetDoc.exists()) {
-      res.status(404).send('Asset not found');
-    } else {
+    if (assetDoc.exists()) {
       res.status(200).json({
         id: assetDoc.id,
         ...assetDoc.data(),
         // Convert the createdAt field to a Date object
         createdAt: assetDoc.data().createdAt.toDate(),
       });
+    } else {
+      res.status(404).send('Asset not found');
     }
   } catch (error) {
     res.status(400).send(error.message);
