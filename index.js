@@ -3,8 +3,13 @@ import cors from 'cors';
 import {
   login,
   register,
-  loginWithGoogle,
+  resetPassword,
 } from './controllers/authController.js';
+import {
+  getUsers,
+  getUser,
+  deleteUser,
+} from './controllers/usersController.js';
 import {
   createAsset,
   getAssets,
@@ -32,7 +37,11 @@ app.get('/', (req, res) => {
 
 app.post('/login', login);
 app.post('/register', register);
-app.post('/logingoogle', loginWithGoogle);
+app.post('/reset-password', resetPassword);
+
+app.get('/users', getUsers);
+app.get('/users/:userId', getUser);
+app.delete('/users', deleteUser);
 
 app.post('/:userId/assets', createAsset);
 app.get('/:userId/assets', getAssets);

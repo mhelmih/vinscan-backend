@@ -1,13 +1,12 @@
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
-  GoogleAuthProvider,
-  signInWithPopup,
+  sendPasswordResetEmail,
 } from 'firebase/auth';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db, auth } from '../firebase.js';
 
-const login = async (req, res) => {
+export const login = async (req, res) => {
   const { email, password } = req.body;
 
   try {
@@ -24,7 +23,7 @@ const login = async (req, res) => {
   }
 };
 
-const register = async (req, res) => {
+export const register = async (req, res) => {
   const { email, password } = req.body;
 
   try {
@@ -55,17 +54,14 @@ const register = async (req, res) => {
   }
 };
 
-const loginWithGoogle = async (req, res) => {
+export const resetPassword = async (req, res) => {
+  const { email } = req.body;
+
   try {
-    const provider = new GoogleAuthProvider();
-    const credential = signInWithPopup(auth, provider);
-    const userCredential = await credential;
-    const user = userCredential.user;
-    res.send({ token: 'token', uid: user.uid });
+    await sendPasswordResetEmail(auth, email);
+    res.send({ message: 'Password reset email sent' });
   } catch (error) {
     console.error(error);
-    res.status(401).send(error.message);
+    res.status(500).send(error.message);
   }
 };
-
-export { login, register, loginWithGoogle };
