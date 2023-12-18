@@ -1,11 +1,11 @@
 import {
   collection,
+  deleteDoc,
   doc,
   getDoc,
   getDocs,
-  deleteDoc,
 } from 'firebase/firestore';
-import { db, auth } from '../firebase.js';
+import { auth, db } from '../firebase.js';
 
 export const getUsers = async (req, res) => {
   try {
