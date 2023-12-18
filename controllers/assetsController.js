@@ -8,15 +8,15 @@ import {
   deleteDoc,
   serverTimestamp,
 } from 'firebase/firestore';
-import { db } from '../firebase.js';
+import { db, auth } from '../firebase.js';
 
 export const createAsset = async (req, res) => {
   try {
-    const userId = req.params.userId;
+    const user = auth.currentUser;
     const data = req.body;
     const createdAt = serverTimestamp();
 
-    const assetRef = collection(db, 'users', userId, 'assets');
+    const assetRef = collection(db, 'users', user.uid, 'assets');
     const docRef = await addDoc(assetRef, {
       ...data,
       createdAt,

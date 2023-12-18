@@ -43,7 +43,7 @@ app.get('/users', getUsers);
 app.get('/users/:userId', getUser);
 app.delete('/users', deleteUser);
 
-app.post('/:userId/assets', createAsset);
+app.post('/assets', createAsset);
 app.get('/:userId/assets', getAssets);
 app.get('/:userId/assets/:assetId', getAsset);
 app.put('/:userId/assets/:assetId', updateAsset);
