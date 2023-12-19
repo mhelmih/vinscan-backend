@@ -14,7 +14,7 @@ const {
  * @swagger
  * /api/v1/assets:
  *   post:
- *     summary: Create an asset in a user
+ *     summary: Create an asset in a user's account
  *     tags: [Assets]
  *     security:
  *     - bearerAuth: []

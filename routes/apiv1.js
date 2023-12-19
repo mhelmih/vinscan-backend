@@ -44,10 +44,10 @@ routerV1.get('/assets/:assetId', isAuthenticated, getAsset);
 routerV1.put('/assets/:assetId', isAuthenticated, updateAsset);
 routerV1.delete('/assets/:assetId', isAuthenticated, deleteAsset);
 
-routerV1.post('/:userId/records', isAuthenticated, createRecord);
-routerV1.get('/:userId/records', isAuthenticated, getRecords);
-routerV1.get('/:userId/records/:recordId', isAuthenticated, getRecord);
-routerV1.put('/:userId/records/:recordId', isAuthenticated, updateRecord);
-routerV1.delete('/:userId/records/:recordId', isAuthenticated, deleteRecord);
+routerV1.post('/records', isAuthenticated, createRecord);
+routerV1.get('/records', isAuthenticated, getRecords);
+routerV1.get('/records/:recordId', isAuthenticated, getRecord);
+routerV1.put('/records/:recordId', isAuthenticated, updateRecord);
+routerV1.delete('/records/:recordId', isAuthenticated, deleteRecord);
 
 module.exports = routerV1;
