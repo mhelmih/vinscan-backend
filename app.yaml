@@ -1,13 +1,13 @@
 runtime: nodejs18
 service: default
 env: standard
+entrypoint: npm run start
 
 handlers:
 - url: /.*
   script: auto
 
 env_variables:
-  PORT: 5000
   NODE_ENV: production
   # firebase config
   API_KEY: AIzaSyBl5pmzZiAqApUmQVtRW13fZWx2ugOoVNQ
