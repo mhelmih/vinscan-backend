@@ -27,7 +27,7 @@ const {
  *             properties:
  *               category:
  *                 type: string
- *                 enum: [cash, bank, e-wallet]
+ *                 enum: ["Cash", "Bank", "E-Wallet"]
  *                 description: Asset category (Cash, Bank, or E-Wallet)
  *               subcategory:
  *                 type: string
@@ -49,7 +49,7 @@ const createAsset = async (req, res) => {
   try {
     const user = req.user;
     const data = req.body;
-    if (!data.category || !data.subcategory || !data.amount) {
+    if (!data.category || !data.subcategory || (!data.amount && data.amount !== 0)) {
       res.status(400).send({
         message: 'category, subcategory, and amount are required',
       });
@@ -104,8 +104,8 @@ const createAsset = async (req, res) => {
  *                     description: Asset ID
  *                   category:
  *                     type: string
- *                     enum: [cash, bank, e-wallet]
- *                     description: Asset category (cash, bank, or e-wallet)
+ *                     enum: [Cash, Bank, E-Wallet]
+ *                     description: Asset category (Cash, Bank, or E-Wallet)
  *                   subCategory:
  *                     type: string
  *                     description: Asset sub-category (e.g. BCA, BNI, OVO, DANA, etc.)
@@ -175,8 +175,8 @@ const getAssets = async (req, res) => {
  *                   description: Asset ID
  *                 category:
  *                   type: string
- *                   enum: [cash, bank, e-wallet]
- *                   description: Asset category (cash, bank, or e-wallet)
+ *                   enum: [Cash, Bank, E-Wallet]
+ *                   description: Asset category (Cash, Bank, or E-Wallet)
  *                 subCategory:
  *                   type: string
  *                   description: Asset sub-category (e.g. BCA, BNI, OVO, DANA, etc.)
@@ -201,7 +201,6 @@ const getAsset = async (req, res) => {
 
     const assetRef = doc(db, 'users', user.uid, 'assets', assetId);
     const assetDoc = await getDoc(assetRef);
-
     if (!assetDoc.exists()) {
       res.status(404).send({ message: 'Asset not found' });
       return;
@@ -214,7 +213,7 @@ const getAsset = async (req, res) => {
       createdAt: assetDoc.data().createdAt.toDate(),
     });
   } catch (error) {
-    res.status(500).send(error.message);
+    res.status(500).send({ message: error.message });
   }
 };
 
@@ -242,19 +241,19 @@ const getAsset = async (req, res) => {
  *             properties:
  *               category:
  *                 type: string
- *                 enum: [cash, bank, e-wallet]
+ *                 enum: ["Cash", "Bank", "E-Wallet"]
  *                 description: Asset category (Cash, Bank, or E-Wallet)
  *               subcategory:
  *                 type: string
  *                 description: Asset sub-category (e.g. BCA, BNI, OVO, DANA, etc.)
  *               amount:
  *                 type: number
- *                 description: Asset amount
+ *                 description: Asset amount, must be greater than or equal to 0
  *     responses:
- *       200:
+ *       204:
  *         description: Asset updated successfully
  *       400:
- *         description: Bad request
+ *         description: Category, subcategory, and amount are required
  *       401:
  *         description: Unauthorized
  *       404:
@@ -268,7 +267,7 @@ const updateAsset = async (req, res) => {
     const assetId = req.params.assetId;
     const data = req.body;
 
-    if (!data.category || !data.subcategory || !data.amount) {
+    if (!data.category || !data.subcategory || (!data.amount && data.amount !== 0)) {
       res.status(400).send({
         message: 'category, subcategory, and amount are required',
       });
@@ -284,23 +283,18 @@ const updateAsset = async (req, res) => {
       });
       return;
     }
-    if (data.amount < 0) {
-      res.status(400).send({
-        message: 'amount must be greater than or equal to 0',
-      });
-      return;
-    }
 
     const assetRef = doc(db, 'users', user.uid, 'assets', assetId);
-    if (!assetRef.exists()) {
+    const assetDoc = await getDoc(assetRef);
+    if (!assetDoc.exists()) {
       res.status(404).send({ message: 'Asset not found' });
       return;
     }
     
     await updateDoc(assetRef, data);
-    res.status(200).send({ message: 'Asset updated successfully'});
+    res.status(204).send({ message: 'Asset updated successfully'});
   } catch (error) {
-    res.status(500).send(error.message);
+    res.status(500).send({ message: error.message });
   }
 };
 
@@ -321,7 +315,9 @@ const updateAsset = async (req, res) => {
  *       description: Asset ID from Firestore
  *     responses:
  *       200:
- *         description: Asset updated successfully
+ *         description: Asset deleted successfully
+ *       400:
+ *         description: Asset ID is required
  *       401:
  *         description: Unauthorized
  *       404:
@@ -333,13 +329,22 @@ const deleteAsset = async (req, res) => {
   try {
     const user = req.user;
     const assetId = req.params.assetId;
+    if (!assetId) {
+      res.status(400).send({ message: 'assetId is required' });
+      return;
+    }
 
     const assetRef = doc(db, 'users', user.uid, 'assets', assetId);
-    await deleteDoc(assetRef);
+    const assetDoc = await getDoc(assetRef);
+    if (!assetDoc.exists()) {
+      res.status(404).send({ message: 'Asset not found' });
+      return;
+    }
 
-    res.status(200).send('Asset deleted successfully');
+    await deleteDoc(assetRef);
+    res.status(200).send({ message: 'Asset deleted successfully' });
   } catch (error) {
-    res.status(400).send(error.message);
+    res.status(500).send({ message: error.message });
   }
 };
 

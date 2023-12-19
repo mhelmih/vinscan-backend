@@ -35,7 +35,6 @@ routerV1.post('/login', login);
 routerV1.post('/register', register);
 routerV1.post('/reset-password', isAuthenticated, resetPassword);
 
-routerV1.get('/users', getUsers);
 routerV1.get('/user', isAuthenticated, getUser);
 routerV1.delete('/user', isAuthenticated, deleteUser);
 
