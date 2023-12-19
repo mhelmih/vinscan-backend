@@ -63,23 +63,38 @@ const { db } = require('../firebase.js');
  *                   items:
  *                     type: object
  *                     properties:
- *                       id:
+ *                       day:
+ *                         type: number
+ *                         description: Record day
+ *                       month:
+ *                         type: number
+ *                         description: Record month
+ *                       year:
+ *                         type: number
+ *                         description: Record year
+ *                       date:
  *                         type: string
- *                         description: Record ID
+ *                         format: dd-mm-yyyy
+ *                         description: Record date
+ *                       asset:
+ *                         type: string
+ *                         description: Asset name from which the record is created
+ *                       type:
+ *                         type: string
+ *                         enum: ["Expense", "Income", "Transfer"]
+ *                         description: Record type (Expense, Income, or Transfer)
  *                       category:
  *                         type: string
- *                         enum: [Cash, Bank, E-Wallet]
- *                         description: Record category (Cash, Bank, or E-Wallet)
- *                       subCategory:
- *                         type: string
- *                         description: Record sub-category (e.g. BCA, BNI, OVO, DANA, etc.)
+ *                         description: Record category (Expense = Makanan, Kehidupan sosial, Transportasi, Kultur, Kebutuhan harian, Pakaian, Kecantikan, Kesehatan, Pendidikan, Hadiah, or Lainnya; Income = Uang saku, Gaji, Bonus, Kas kecil, or Lainnya; Transfer = Asset tujuan)
  *                       amount:
  *                         type: number
  *                         description: Record amount
- *                       createdAt:
+ *                       note:
  *                         type: string
- *                         format: date-time
- *                         description: Record creation date
+ *                         description: Record note
+ *                       description:
+ *                         type: string
+ *                         description: Record description
  *       401:
  *         description: Unauthorized
  *       500:

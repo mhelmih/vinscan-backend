@@ -255,40 +255,42 @@ const createRecord = async (req, res) => {
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 day:
- *                   type: number
- *                   description: Record day
- *                 month:
- *                   type: number
- *                   description: Record month
- *                 year:
- *                   type: number
- *                   description: Record year
- *                 date:
- *                   type: string
- *                   format: dd-mm-yyyy
- *                   description: Record date
- *                 asset:
- *                   type: string
- *                   description: Asset name from which the record is created
- *                 type:
- *                   type: string
- *                   enum: ["Expense", "Income", "Transfer"]
- *                   description: Record type (Expense, Income, or Transfer)
- *                 category:
- *                   type: string
- *                   description: Record category (Expense = Makanan, Kehidupan sosial, Transportasi, Kultur, Kebutuhan harian, Pakaian, Kecantikan, Kesehatan, Pendidikan, Hadiah, or Lainnya; Income = Uang saku, Gaji, Bonus, Kas kecil, or Lainnya; Transfer = Asset tujuan)
- *                 amount:
- *                   type: number
- *                   description: Record amount
- *                 note:
- *                   type: string
- *                   description: Record note
- *                 description:
- *                   type: string
- *                   description: Record description
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   day:
+ *                     type: number
+ *                     description: Record day
+ *                   month:
+ *                     type: number
+ *                     description: Record month
+ *                   year:
+ *                     type: number
+ *                     description: Record year
+ *                   date:
+ *                     type: string
+ *                     format: dd-mm-yyyy
+ *                     description: Record date
+ *                   asset:
+ *                     type: string
+ *                     description: Asset name from which the record is created
+ *                   type:
+ *                     type: string
+ *                     enum: ["Expense", "Income", "Transfer"]
+ *                     description: Record type (Expense, Income, or Transfer)
+ *                   category:
+ *                     type: string
+ *                     description: Record category (Expense = Makanan, Kehidupan sosial, Transportasi, Kultur, Kebutuhan harian, Pakaian, Kecantikan, Kesehatan, Pendidikan, Hadiah, or Lainnya; Income = Uang saku, Gaji, Bonus, Kas kecil, or Lainnya; Transfer = Asset tujuan)
+ *                   amount:
+ *                     type: number
+ *                     description: Record amount
+ *                   note:
+ *                     type: string
+ *                     description: Record note
+ *                   description:
+ *                     type: string
+ *                     description: Record description
  *       400:
  *         description: Bad request
  *       401:
