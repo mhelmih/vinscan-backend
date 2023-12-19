@@ -1,4 +1,4 @@
-const { initializeFirebaseAdmin } = require('../firebase');
+const { adminApp } = require('../firebase');
 
 const isAuthenticated = async (req, res, next) => {
   const header = req.headers.authorization;
@@ -9,7 +9,6 @@ const isAuthenticated = async (req, res, next) => {
   const token = header.split('Bearer ')[1];
 
   try {
-    const adminApp = await initializeFirebaseAdmin();
     const decodedToken = await adminApp.auth().verifyIdToken(token);
     req.user = decodedToken;
     next();
