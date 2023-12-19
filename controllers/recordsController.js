@@ -116,7 +116,7 @@ const createRecord = async (req, res) => {
     const assetData = assetDoc.data();
 
     // if the type is Transfer, check if the target asset exists
-    let targetAssetRef, targetAssetDoc, targetAssetData;
+    let targetAssetRef, targetAssetDoc, targetAssetData, targetAssetAmount;
     if (data.type === 'Transfer') {
       targetAssetRef = doc(db, 'users', userId, 'assets', data.category);
       targetAssetDoc = await getDoc(targetAssetRef);
@@ -125,6 +125,7 @@ const createRecord = async (req, res) => {
         return;
       }
       targetAssetData = targetAssetDoc.data();
+      targetAssetAmount = targetAssetData.amount;
       data.category = targetAssetData.subcategory;
     }
 
@@ -159,7 +160,6 @@ const createRecord = async (req, res) => {
       });
     } else {
       // type === 'Transfer'
-      const targetAssetAmount = targetAssetData.amount;
       await updateDoc(assetRef, {
         amount: assetAmount - data.amount,
       });
