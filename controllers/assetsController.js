@@ -16,11 +16,8 @@ const {
  *   post:
  *     summary: Create an asset in a user
  *     tags: [Assets]
- *     headers:
- *       Authorization:
- *         type: string
- *         description: Bearer token
- *         example: Bearer <token>
+ *     security:
+ *     - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -43,6 +40,8 @@ const {
  *         description: Asset created successfully
  *       400:
  *         description: Bad request
+ *       401:
+ *         description: Unauthorized
  *       500:
  *         description: Internal server error
  */
@@ -88,11 +87,8 @@ const createAsset = async (req, res) => {
  *   get:
  *     summary: Get all assets from a user
  *     tags: [Assets]
- *     headers:
- *       Authorization:
- *         type: string
- *         description: Bearer token
- *         example: Bearer <token>
+ *     security:
+ *     - bearerAuth: []
  *     responses:
  *       200:
  *         description: Assets retrieved successfully
@@ -120,6 +116,8 @@ const createAsset = async (req, res) => {
  *                     type: string
  *                     format: date-time
  *                     description: Asset creation date
+ *       401:
+ *         description: Unauthorized
  *       500:
  *         description: Internal server error
  */
@@ -155,6 +153,8 @@ const getAssets = async (req, res) => {
  *   get:
  *     summary: Get an asset from a user
  *     tags: [Assets]
+ *     security:
+ *     - bearerAuth: []
  *     parameters:
  *     - name: assetId
  *       in: path
@@ -162,11 +162,6 @@ const getAssets = async (req, res) => {
  *       schema:
  *         type: string
  *       description: Asset ID from Firestore
- *     headers:
- *       Authorization:
- *         type: string
- *         description: Bearer token
- *         example: Bearer <token>
  *     responses:
  *       200:
  *         description: Asset retrieved successfully
@@ -192,6 +187,8 @@ const getAssets = async (req, res) => {
  *                   type: string
  *                   format: date-time
  *                   description: Asset creation date
+ *       401:
+ *         description: Unauthorized
  *       404:
  *         description: Asset not found
  *       500:
@@ -227,6 +224,8 @@ const getAsset = async (req, res) => {
  *   put:
  *     summary: Update an asset from a user
  *     tags: [Assets]
+ *     security:
+ *     - bearerAuth: []
  *     parameters:
  *     - name: assetId
  *       in: path
@@ -234,11 +233,6 @@ const getAsset = async (req, res) => {
  *       schema:
  *         type: string
  *       description: Asset ID from Firestore
- *     headers:
- *       Authorization:
- *         type: string
- *         description: Bearer token
- *         example: Bearer <token>
  *     requestBody:
  *       required: true
  *       content:
@@ -259,6 +253,10 @@ const getAsset = async (req, res) => {
  *     responses:
  *       200:
  *         description: Asset updated successfully
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Unauthorized
  *       404:
  *         description: Asset not found
  *       500:
@@ -269,6 +267,29 @@ const updateAsset = async (req, res) => {
     const user = req.user;
     const assetId = req.params.assetId;
     const data = req.body;
+
+    if (!data.category || !data.subcategory || !data.amount) {
+      res.status(400).send({
+        message: 'category, subcategory, and amount are required',
+      });
+      return;
+    }
+    if (
+      data.category !== 'Cash' &&
+      data.category !== 'Bank' &&
+      data.category !== 'E-Wallet'
+    ) {
+      res.status(400).send({
+        message: 'category must be Cash, Bank, or E-Wallet',
+      });
+      return;
+    }
+    if (data.amount < 0) {
+      res.status(400).send({
+        message: 'amount must be greater than or equal to 0',
+      });
+      return;
+    }
 
     const assetRef = doc(db, 'users', user.uid, 'assets', assetId);
     if (!assetRef.exists()) {
@@ -289,6 +310,8 @@ const updateAsset = async (req, res) => {
  *   delete:
  *     summary: Delete an asset from a user
  *     tags: [Assets]
+ *     security:
+ *     - bearerAuth: []
  *     parameters:
  *     - name: assetId
  *       in: path
@@ -296,14 +319,11 @@ const updateAsset = async (req, res) => {
  *       schema:
  *         type: string
  *       description: Asset ID from Firestore
- *     headers:
- *       Authorization:
- *         type: string
- *         description: Bearer token
- *         example: Bearer <token>
  *     responses:
  *       200:
  *         description: Asset updated successfully
+ *       401:
+ *         description: Unauthorized
  *       404:
  *         description: Asset not found
  *       500:
