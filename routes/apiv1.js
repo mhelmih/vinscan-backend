@@ -1,28 +1,29 @@
-import express from 'express';
-import {
+const express = require('express');
+const {
   createAsset,
   deleteAsset,
   getAsset,
   getAssets,
   updateAsset,
-} from '../controllers/assetsController.js';
-import {
+} = require('../controllers/assetsController');
+const {
   login,
   register,
   resetPassword,
-} from '../controllers/authController.js';
-import {
+} = require('../controllers/authController');
+const {
   createRecord,
   deleteRecord,
   getRecord,
   getRecords,
   updateRecord,
-} from '../controllers/recordsController.js';
-import {
+} = require('../controllers/recordsController');
+const {
   deleteUser,
   getUser,
   getUsers,
-} from '../controllers/usersController.js';
+} = require('../controllers/usersController');
+const { isAuthenticated } = require('../middleware/authMiddleware');
 
 const routerV1 = express.Router();
 
@@ -35,19 +36,19 @@ routerV1.post('/register', register);
 routerV1.post('/reset-password', resetPassword);
 
 routerV1.get('/users', getUsers);
-routerV1.get('/users/:userId', getUser);
-routerV1.delete('/users', deleteUser);
+routerV1.get('/user', isAuthenticated, getUser);
+routerV1.delete('/user', isAuthenticated, deleteUser);
 
-routerV1.post('/:userId/assets', createAsset);
-routerV1.get('/:userId/assets', getAssets);
-routerV1.get('/:userId/assets/:assetId', getAsset);
-routerV1.put('/:userId/assets/:assetId', updateAsset);
-routerV1.delete('/:userId/assets/:assetId', deleteAsset);
+routerV1.post('/assets', isAuthenticated, createAsset);
+routerV1.get('/assets', isAuthenticated, getAssets);
+routerV1.get('/assets/:assetId', isAuthenticated, getAsset);
+routerV1.put('/assets/:assetId', isAuthenticated, updateAsset);
+routerV1.delete('/assets/:assetId', isAuthenticated, deleteAsset);
 
-routerV1.post('/:userId/records', createRecord);
-routerV1.get('/:userId/records', getRecords);
-routerV1.get('/:userId/records/:recordId', getRecord);
-routerV1.put('/:userId/records/:recordId', updateRecord);
-routerV1.delete('/:userId/records/:recordId', deleteRecord);
+routerV1.post('/:userId/records', isAuthenticated, createRecord);
+routerV1.get('/:userId/records', isAuthenticated, getRecords);
+routerV1.get('/:userId/records/:recordId', isAuthenticated, getRecord);
+routerV1.put('/:userId/records/:recordId', isAuthenticated, updateRecord);
+routerV1.delete('/:userId/records/:recordId', isAuthenticated, deleteRecord);
 
-export default routerV1;
+module.exports = routerV1;

@@ -1,8 +1,8 @@
-import cors from 'cors';
-import express from 'express';
-import swaggerJsDoc from 'swagger-jsdoc';
-import swaggerUi from 'swagger-ui-express';
-import routerV1 from './routes/apiv1.js';
+const express = require('express');
+const cors = require('cors');
+const swaggerJsDoc = require('swagger-jsdoc');
+const swaggerUi = require('swagger-ui-express');
+const routerV1 = require('./routes/apiv1.js');
 
 const app = express();
 const PORT = process.env.PORT || 5000;

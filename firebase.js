@@ -1,32 +1,38 @@
-import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
-import dotenv from 'dotenv';
+const { SecretManagerServiceClient } = require('@google-cloud/secret-manager');
+const admin = require('firebase-admin');
+const dotenv = require('dotenv');
+const { initializeApp } = require('firebase/app');
+const { getAuth } = require('firebase/auth');
+const { getFirestore } = require('firebase/firestore');
 
 dotenv.config();
 
-const {
-  API_KEY,
-  AUTH_DOMAIN,
-  PROJECT_ID,
-  STORAGE_BUCKET,
-  MESSAGING_SENDER_ID,
-  APP_ID,
-  MEASUREMENT_ID,
-} = process.env;
+const secretClient = new SecretManagerServiceClient();
 
 const firebaseConfig = {
-  apiKey: API_KEY,
-  authDomain: AUTH_DOMAIN,
-  projectId: PROJECT_ID,
-  storageBucket: STORAGE_BUCKET,
-  messagingSenderId: MESSAGING_SENDER_ID,
-  appId: APP_ID,
-  measurementId: MEASUREMENT_ID,
+  apiKey: process.env.API_KEY,
+  authDomain: process.env.AUTH_DOMAIN,
+  projectId: process.env.PROJECT_ID,
+  storageBucket: process.env.STORAGE_BUCKET,
+  messagingSenderId: process.env.MESSAGING_SENDER_ID,
+  appId: process.env.APP_ID,
+  measurementId: process.env.MEASUREMENT_ID,
 };
 
 const firebaseApp = initializeApp(firebaseConfig);
 const auth = getAuth(firebaseApp);
 const db = getFirestore(firebaseApp);
 
-export { auth, db };
+const initializeFirebaseAdmin = async () => {
+  const secretName = 'projects/vinscan-408603/secrets/vinscan-firebase-service-account-key/versions/latest';
+  const [version] = await secretClient.accessSecretVersion({ name: secretName });
+  // Parse the secret and set it up for Firebase Admin
+  const credential = JSON.parse(version.payload.data.toString('utf8'));
+  const adminApp = admin.initializeApp({
+    credential: admin.credential.cert(credential),
+  });
+
+  return adminApp;
+}
+
+module.exports = { auth, db, initializeFirebaseAdmin };

@@ -1,12 +1,12 @@
-import {
-  createUserWithEmailAndPassword,
-  sendPasswordResetEmail,
-  signInWithEmailAndPassword,
-} from 'firebase/auth';
-import { doc, serverTimestamp, setDoc } from 'firebase/firestore';
-import { auth, db } from '../firebase.js';
+const { signInWithEmailAndPassword } = require('firebase/auth');
+const { createUserWithEmailAndPassword } = require('firebase/auth');
+const { sendPasswordResetEmail } = require('firebase/auth');
+const { doc } = require('firebase/firestore');
+const { serverTimestamp } = require('firebase/firestore');
+const { setDoc } = require('firebase/firestore');
+const { auth, db } = require('../firebase.js');
 
-export const login = async (req, res) => {
+const login = async (req, res) => {
   const { email, password } = req.body;
 
   try {
@@ -16,14 +16,15 @@ export const login = async (req, res) => {
       password,
     );
     const user = userCredential.user;
-    res.send({ token: 'token', uid: user.uid });
+    const token = await user.getIdToken();
+    res.send({ token, uid: user.uid });
   } catch (error) {
     console.error(error);
-    res.status(401).send({ error: 'Invalid username or password' });
+    res.status(401).send({ message: 'Invalid username or password' });
   }
 };
 
-export const register = async (req, res) => {
+const register = async (req, res) => {
   const { email, password } = req.body;
 
   try {
@@ -54,7 +55,7 @@ export const register = async (req, res) => {
   }
 };
 
-export const resetPassword = async (req, res) => {
+const resetPassword = async (req, res) => {
   const { email } = req.body;
 
   try {
@@ -64,4 +65,10 @@ export const resetPassword = async (req, res) => {
     console.error(error);
     res.status(500).send(error.message);
   }
+};
+
+module.exports = {
+  login,
+  register,
+  resetPassword,
 };

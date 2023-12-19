@@ -1,13 +1,13 @@
-import {
-  collection,
-  deleteDoc,
-  doc,
+const {
   getDoc,
   getDocs,
-} from 'firebase/firestore';
-import { auth, db } from '../firebase.js';
+  collection,
+  doc,
+  deleteDoc,
+} = require('firebase/firestore');
+const { db } = require('../firebase.js');
 
-export const getUsers = async (req, res) => {
+const getUsers = async (req, res) => {
   try {
     const usersSnapshot = await getDocs(collection(db, 'users'));
     const users = [];
@@ -35,8 +35,8 @@ export const getUsers = async (req, res) => {
   }
 };
 
-export const getUser = async (req, res) => {
-  const userId = req.params.userId;
+const getUser = async (req, res) => {
+  const userId = req.user.uid;
 
   try {
     const userDocRef = doc(db, 'users', userId);
@@ -83,9 +83,9 @@ const getNestedCollection = async (parentDocRef, collectionName) => {
   return documents;
 };
 
-export const deleteUser = async (req, res) => {
+const deleteUser = async (req, res) => {
   try {
-    const user = auth.currentUser;
+    const user = req.user;
     const userDocRef = doc(db, 'users', user.uid);
 
     // Delete nested collections first
@@ -114,4 +114,10 @@ const deleteNestedCollection = async (parentDocRef, collectionName) => {
   });
 
   await Promise.all(deletePromises);
+};
+
+module.exports = {
+  getUsers,
+  getUser,
+  deleteUser,
 };

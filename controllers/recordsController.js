@@ -1,16 +1,14 @@
-import {
-  addDoc,
-  collection,
-  deleteDoc,
-  doc,
-  getDoc,
-  getDocs,
-  serverTimestamp,
-  updateDoc,
-} from 'firebase/firestore';
-import { db } from '../firebase.js';
+const { db } = require('../firebase.js');
+const { collection } = require('firebase/firestore');
+const { addDoc } = require('firebase/firestore');
+const { serverTimestamp } = require('firebase/firestore');
+const { getDocs } = require('firebase/firestore');
+const { doc } = require('firebase/firestore');
+const { getDoc } = require('firebase/firestore');
+const { updateDoc } = require('firebase/firestore');
+const { deleteDoc } = require('firebase/firestore');
 
-export const createRecord = async (req, res) => {
+const createRecord = async (req, res) => {
   try {
     const userId = req.params.userId;
     const data = req.body;
@@ -28,7 +26,7 @@ export const createRecord = async (req, res) => {
   }
 };
 
-export const getRecords = async (req, res) => {
+const getRecords = async (req, res) => {
   try {
     const userId = req.params.userId;
 
@@ -51,7 +49,7 @@ export const getRecords = async (req, res) => {
   }
 };
 
-export const getRecord = async (req, res) => {
+const getRecord = async (req, res) => {
   try {
     const userId = req.params.userId;
     const recordId = req.params.recordId;
@@ -74,7 +72,7 @@ export const getRecord = async (req, res) => {
   }
 };
 
-export const updateRecord = async (req, res) => {
+const updateRecord = async (req, res) => {
   try {
     const userId = req.params.userId;
     const recordId = req.params.recordId;
@@ -89,7 +87,7 @@ export const updateRecord = async (req, res) => {
   }
 };
 
-export const deleteRecord = async (req, res) => {
+const deleteRecord = async (req, res) => {
   try {
     const userId = req.params.userId;
     const recordId = req.params.recordId;
@@ -101,4 +99,12 @@ export const deleteRecord = async (req, res) => {
   } catch (error) {
     res.status(400).send(error.message);
   }
+};
+
+module.exports = {
+  createRecord,
+  getRecords,
+  getRecord,
+  updateRecord,
+  deleteRecord,
 };
