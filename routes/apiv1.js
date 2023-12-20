@@ -21,7 +21,6 @@ const {
 const {
   deleteUser,
   getUser,
-  getUsers,
 } = require('../controllers/usersController');
 const { isAuthenticated } = require('../middleware/authMiddleware');
 

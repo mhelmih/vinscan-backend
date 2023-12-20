@@ -250,7 +250,7 @@ const getAsset = async (req, res) => {
  *                 type: number
  *                 description: Asset amount, must be greater than or equal to 0
  *     responses:
- *       204:
+ *       200:
  *         description: Asset updated successfully
  *       400:
  *         description: Category, subcategory, and amount are required
@@ -292,7 +292,7 @@ const updateAsset = async (req, res) => {
     }
     
     await updateDoc(assetRef, data);
-    res.status(204).send({ message: 'Asset updated successfully'});
+    res.status(200).send({ message: 'Asset updated successfully'});
   } catch (error) {
     res.status(500).send({ message: error.message });
   }

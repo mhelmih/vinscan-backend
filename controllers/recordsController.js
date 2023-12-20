@@ -548,7 +548,7 @@ const getRecord = async (req, res) => {
  *                 type: string
  *                 description: Record description (optional)
  *     responses:
- *       204:
+ *       200:
  *         description: Record updated successfully
  *       400:
  *         description: Bad request
@@ -716,7 +716,7 @@ const updateRecord = async (req, res) => {
       }
     }
 
-    res.status(204).send({ message: 'record updated successfully' });
+    res.status(200).send({ message: 'record updated successfully' });
   } catch (error) {
     console.log(error)
     res.status(500).send({ message: error.message });
