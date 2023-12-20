@@ -43,7 +43,7 @@ const { auth, db } = require('../firebase.js');
  *       400:
  *         description: Email and password are required
  *       401:
- *         description: Invalid username or password
+ *         description: Invalid email or password
  *       500:
  *         description: Internal server error
  */
@@ -89,7 +89,7 @@ const login = async (req, res) => {
   } catch (error) {
     console.error(error);
     if (error.code === 'auth/invalid-credential') {
-      res.status(401).send({ message: 'Invalid username or password' });
+      res.status(401).send({ message: 'Invalid email or password' });
       return;
     }
     res.status(500).send(error.message);
