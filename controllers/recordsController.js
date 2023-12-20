@@ -638,7 +638,7 @@ const updateRecord = async (req, res) => {
     const currentRecordData = recordDoc.data();
 
     // update the record
-    const date = new Date(data.year, data.month - 1, data.day);
+    const date = new Date(data.year, data.month - 1, data.day).toISOString();
     const tempRecord = {
       day: data.day,
       month: data.month,
