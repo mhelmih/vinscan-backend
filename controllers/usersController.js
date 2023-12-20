@@ -5,7 +5,7 @@ const {
   doc,
   deleteDoc,
 } = require('firebase/firestore');
-const { db } = require('../firebase.js');
+const { db, auth } = require('../firebase.js');
 
 /**
  * @swagger
@@ -160,7 +160,7 @@ const getNestedCollection = async (parentDocRef, collectionName) => {
  */
 const deleteUser = async (req, res) => {
   try {
-    const user = req.user;
+    const user = auth.currentUser;
     const userDocRef = doc(db, 'users', user.uid);
 
     // Delete nested collections first
