@@ -100,7 +100,7 @@ const login = async (req, res) => {
  * @swagger
  * /api/v1/register:
  *   post:
- *     summary: Login to the application
+ *     summary: Register to the application
  *     tags: [Auth]
  *     requestBody:
  *       required: true
