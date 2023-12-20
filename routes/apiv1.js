@@ -16,6 +16,7 @@ const {
   deleteRecord,
   getRecord,
   getRecords,
+  getAnnualRecords,
   updateRecord,
 } = require('../controllers/recordsController');
 const {
@@ -45,6 +46,7 @@ routerV1.delete('/assets/:assetId', isAuthenticated, deleteAsset);
 
 routerV1.post('/records', isAuthenticated, createRecord);
 routerV1.get('/records', isAuthenticated, getRecords);
+routerV1.get('/records/annual', isAuthenticated, getAnnualRecords);
 routerV1.get('/records/:recordId', isAuthenticated, getRecord);
 routerV1.put('/records/:recordId', isAuthenticated, updateRecord);
 routerV1.delete('/records/:recordId', isAuthenticated, deleteRecord);

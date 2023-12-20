@@ -408,6 +408,202 @@ const getRecords = async (req, res) => {
 
 /**
  * @swagger
+ * /api/v1/records/annual:
+ *   get:
+ *     summary: Get daily records in a user's account
+ *     description: Get daily records in a user's account. Records can be filtered by (year, type, category, and asset).
+ *     tags: [Records]
+ *     security:
+ *     - bearerAuth: []
+ *     parameters:
+ *     - in: query
+ *       name: year
+ *       schema:
+ *         type: string
+ *         example: yyyy
+ *         description: Year of the records to be retrieved
+ *     - in: query
+ *       name: type
+ *       schema:
+ *         type: string
+ *         enum: ["Expense", "Income", "Transfer"]
+ *         description: Type of the records to be retrieved
+ *     - in: query
+ *       name: category
+ *       schema:
+ *         type: string
+ *         description: Category of the records to be retrieved
+ *         example: Makanan
+ *     - in: query
+ *       name: asset
+ *       schema:
+ *         type: string
+ *         description: Asset of the records to be retrieved
+ *         example: Cash
+ *     responses:
+ *       200:
+ *         description: Record retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   '1':
+ *                     type: array
+ *                     items:
+ *                       type: object
+ *                       properties:
+ *                         'dd-mm-yyyy':
+ *                           type: array
+ *                           items:
+ *                             type: object
+ *                             properties:
+ *                               id:
+ *                                 type: string
+ *                                 description: Record ID
+ *                                 example: 1
+ *                               day:
+ *                                 type: number
+ *                                 description: Record day
+ *                                 example: 1
+ *                               month:
+ *                                 type: number
+ *                                 description: Record month
+ *                                 example: 1
+ *                               year:
+ *                                 type: number
+ *                                 description: Record year
+ *                                 example: 2021
+ *                               date:
+ *                                 type: string
+ *                                 format: dd-mm-yyyy
+ *                                 description: Record date
+ *                                 example: 01-01-2021
+ *                               asset:
+ *                                 type: string
+ *                                 description: Asset name from which the record is created
+ *                                 example: Cash
+ *                               type:
+ *                                 type: string
+ *                                 enum: ["Expense", "Income", "Transfer"]
+ *                                 description: Record type (Expense, Income, or Transfer)
+ *                                 example: Expense
+ *                               category:
+ *                                 type: string
+ *                                 description: Record category (Expense = Makanan, Kehidupan sosial, Transportasi, Kultur, Kebutuhan harian, Pakaian, Kecantikan, Kesehatan, Pendidikan, Hadiah, or Lainnya; Income = Uang saku, Gaji, Bonus, Kas kecil, or Lainnya; Transfer = Asset tujuan)
+ *                                 example: Makanan
+ *                               amount:
+ *                                 type: number
+ *                                 description: Record amount
+ *                                 example: 10000
+ *                               note:
+ *                                 type: string
+ *                                 description: Record note
+ *                                 example: Makan siang
+ *                               description:
+ *                                 type: string
+ *                                 description: Record description
+ *                                 example: Makan siang di kantin
+ *                               createdAt:
+ *                                 type: string
+ *                                 format: date-time
+ *                                 description: Record creation date
+ *                                 example: 2021-01-01T00:00:00.000Z
+ *       400:
+ *         description: Bad request
+ *       500:
+ *         description: Internal server error
+ */
+const getAnnualRecords = async (req, res) => {
+  try {
+    const userId = req.user.uid;
+    const { year, type, category, asset } =
+      req.query;
+
+    if (!year || year !== 0) {
+      res
+        .status(400)
+        .send({ message: 'year is required' });
+      return;
+    }
+
+    const recordRef = collection(db, 'users', userId, 'records');
+    let recordsSnapshot;
+    recordsSnapshot = await getDocs(
+      query(
+        recordRef,
+        where('year', '==', year),
+      ),
+    );
+
+    if (asset) {
+      recordsSnapshot = recordsSnapshot.filter(
+        (doc) => doc.data().asset === asset,
+      );
+    }
+    if (type) {
+      recordsSnapshot = recordsSnapshot.filter(
+        (doc) => doc.data().type === type,
+      );
+    }
+    if (category) {
+      recordsSnapshot = recordsSnapshot.filter(
+        (doc) => doc.data().category === category,
+      );
+    }
+
+    let records = [];
+    // return the records with this format
+    // [
+    //   '1': {
+    //     'dd-mm-yyyy': [
+    //       {
+    //         id: 'recordId',
+    //         day: 1,
+    //         month: 1,
+    //         year: 2021,
+    //         date: '01-01-2021',
+    //         asset: 'Cash',
+    //         type: 'Expense',
+    //         category: 'Makanan',
+    //         amount: 10000,
+    //         note: 'Makan siang',
+    //         description: 'Makan siang di kantin',
+    //         createdAt: '2021-01-01T00:00:00.000Z',
+    //       },  
+    //     ],
+    //   }
+    // ]
+    recordsSnapshot.forEach((doc) => {
+      const record = {
+        id: doc.id,
+        ...doc.data(),
+        // Convert the createdAt field to a Date object
+        createdAt: doc.data().createdAt.toDate(),
+      };
+      const date = record.date;
+      const dateArr = date.split('-');
+      const month = dateArr[1];
+
+      if (!records[month]) {
+        records[month] = {};
+      }
+      if (!records[month][date]) {
+        records[month][date] = [];
+      }
+      records[month][date].push(record);
+    });
+
+    res.status(200).json(records);
+  } catch (error) {
+    res.status(500).send({ message: error.message });
+  }
+};
+
+/**
+ * @swagger
  * /api/v1/records/{recordId}:
  *   get:
  *     summary: Get a record in a user's account
@@ -780,6 +976,7 @@ const deleteRecord = async (req, res) => {
 module.exports = {
   createRecord,
   getRecords,
+  getAnnualRecords,
   getRecord,
   updateRecord,
   deleteRecord,
