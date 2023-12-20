@@ -95,27 +95,76 @@ const createAsset = async (req, res) => {
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   id:
- *                     type: string
- *                     description: Asset ID
- *                   category:
- *                     type: string
- *                     enum: [Cash, Bank, E-Wallet]
- *                     description: Asset category (Cash, Bank, or E-Wallet)
- *                   subCategory:
- *                     type: string
- *                     description: Asset sub-category (e.g. BCA, BNI, OVO, DANA, etc.)
- *                   amount:
- *                     type: number
- *                     description: Asset amount
- *                   createdAt:
- *                     type: string
- *                     format: date-time
- *                     description: Asset creation date
+ *               type: object
+ *               properties:
+ *                 'Cash':
+ *                    type: array
+ *                    items:
+ *                      type: object
+ *                      properties:
+ *                        id:
+ *                          type: string
+ *                          description: Asset ID
+ *                        category:
+ *                          type: string
+ *                          enum: [Cash]
+ *                          description: Asset category (Cash, Bank, or E-Wallet)
+ *                        subCategory:
+ *                          type: string
+ *                          description: Asset sub-category (e.g. BCA, BNI, OVO, DANA, etc.)
+ *                        amount:
+ *                          type: number
+ *                          description: Asset amount
+ *                        createdAt:
+ *                          type: string
+ *                          format: date-time
+ *                          description: Asset creation date
+ *                 'Bank':
+ *                   type: array
+ *                   description: Bank assets
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                         description: Asset ID
+ *                       category:
+ *                         type: string
+ *                         enum: [Bank]
+ *                         description: Asset category (Cash, Bank, or E-Wallet)
+ *                       subCategory:
+ *                         type: string
+ *                         description: Asset sub-category (e.g. BCA, BNI, OVO, DANA, etc.)
+ *                       amount:
+ *                         type: number
+ *                         description: Asset amount
+ *                       createdAt:
+ *                         type: string
+ *                         format: date-time
+ *                         description: Asset creation date
+ *                 'E-Wallet':
+ *                   type: array
+ *                   description: E-Wallet assets
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                         description: Asset ID
+ *                       category:
+ *                         type: string
+ *                         enum: [E-Wallet]
+ *                         description: Asset category (Cash, Bank, or E-Wallet)
+ *                       subCategory:
+ *                         type: string
+ *                         description: Asset sub-category (e.g. BCA, BNI, OVO, DANA, etc.)
+ *                       amount:
+ *                         type: number
+ *                         description: Asset amount
+ *                       createdAt:
+ *                         type: string
+ *                         format: date-time
+ *                         description: Asset creation date
  *       401:
  *         description: Unauthorized
  *       500:
@@ -133,12 +182,31 @@ const getAssets = async (req, res) => {
     }
 
     const assets = [];
+    // get the assets in this format:
+    // {
+    //    'Cash': [
+    //      { id: '...', ... },
+    //      { id: '...', ... },
+    //    ],
+    //    'Bank': [
+    //      { id: '...', ... },
+    //      { id: '...', ... },
+    //    ],
+    //    'E-Wallet': [
+    //      { id: '...', ... },
+    //      { id: '...', ... },
+    //    ],
+    // }
     assetsSnapshot.forEach((doc) => {
-      assets.push({
+      const data = doc.data();
+      if (!assets[data.category]) {
+        assets[data.category] = [];
+      }
+      assets[data.category].push({
         id: doc.id,
-        ...doc.data(),
+        ...data,
         // Convert the createdAt field to a Date object
-        createdAt: doc.data().createdAt.toDate(),
+        createdAt: data.createdAt.toDate(),
       });
     });
     res.status(200).json(assets);
