@@ -1,9 +1,10 @@
-const { signInWithEmailAndPassword } = require('firebase/auth');
-const { createUserWithEmailAndPassword } = require('firebase/auth');
-const { sendPasswordResetEmail } = require('firebase/auth');
-const { doc } = require('firebase/firestore');
-const { serverTimestamp } = require('firebase/firestore');
-const { setDoc } = require('firebase/firestore');
+const {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  sendEmailVerification,
+  sendPasswordResetEmail,
+} = require('firebase/auth');
+const { doc, serverTimestamp, setDoc, getDoc } = require('firebase/firestore');
 const { auth, db } = require('../firebase.js');
 
 /**
@@ -46,6 +47,7 @@ const { auth, db } = require('../firebase.js');
  *       500:
  *         description: Internal server error
  */
+
 const login = async (req, res) => {
   const { email, password } = req.body;
 
@@ -60,8 +62,28 @@ const login = async (req, res) => {
       email,
       password,
     );
-
     const user = userCredential.user;
+
+    // Check if the user is registered and verified
+    if (!user.emailVerified) {
+      res.status(401).send({ message: 'User is not verified' });
+      return;
+    }
+
+    // Check if this is the first login (additional condition may be needed)
+    // For simplicity, assuming that a user is considered new if they haven't stored data in Firestore
+    const userDocRef = doc(db, 'users', user.uid);
+    const userDoc = await getDoc(userDocRef);
+
+    if (!userDoc.exists()) {
+      // Store additional data in Firestore
+      await setDoc(userDocRef, {
+        email: user.email,
+        createdAt: serverTimestamp(),
+        // Add more fields as needed
+      });
+    }
+
     const token = await user.getIdToken();
     res.send({ token, uid: user.uid });
   } catch (error) {
@@ -117,6 +139,7 @@ const login = async (req, res) => {
  *       500:
  *         description: Internal server error
  */
+
 const register = async (req, res) => {
   const { email, password } = req.body;
 
@@ -132,30 +155,29 @@ const register = async (req, res) => {
       password,
     );
 
-    if (!userCredential) {
-      res.status(401).send({ message: 'Account already exists or invalid password' });
-      return;
-    }
-
     const user = userCredential.user;
-    // Use the user's UID as the Firestore document ID
-    const userDocRef = doc(db, 'users', user.uid);
 
-    // Set the data for the user document
-    await setDoc(userDocRef, {
-      email: user.email,
-      createdAt: serverTimestamp(),
-    });
+    // Send email verification
+    await sendEmailVerification(user);
 
-    const token = await user.getIdToken();
-
+    // Note: Do not store data in Firestore until email is verified
     res.status(201).send({
-      message: 'User registered successfully',
+      message: 'User registered successfully. Verification email sent.',
       uid: user.uid,
-      token,
     });
   } catch (error) {
-    console.error(error);
+    if (error.code === 'auth/email-already-in-use') {
+      res
+        .status(401)
+        .send({ message: 'Account already exists or invalid password' });
+      return;
+    }
+    if (error.code === 'auth/weak-password') {
+      res
+        .status(401)
+        .send({ message: 'Password must be at least 6 characters' });
+      return;
+    }
     res.status(500).send(error.message);
   }
 };
