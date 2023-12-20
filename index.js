@@ -16,7 +16,7 @@ const swaggerOptions = {
     },
     servers: [
       {
-        url: `http://localhost:${PORT}`,
+        url: `https://vinscan-408603.et.r.appspot.com`,
       },
     ],
   },

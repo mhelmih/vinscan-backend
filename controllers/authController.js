@@ -60,16 +60,16 @@ const login = async (req, res) => {
       email,
       password,
     );
-    if (!userCredential) {
-      res.status(401).send({ message: 'Invalid username or password' });
-      return;
-    }
 
     const user = userCredential.user;
     const token = await user.getIdToken();
     res.send({ token, uid: user.uid });
   } catch (error) {
     console.error(error);
+    if (error.code === 'auth/invalid-credential') {
+      res.status(401).send({ message: 'Invalid username or password' });
+      return;
+    }
     res.status(500).send(error.message);
   }
 };
