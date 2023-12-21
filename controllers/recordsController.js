@@ -8,6 +8,8 @@ const {
   doc,
   updateDoc,
   deleteDoc,
+  query,
+  where,
 } = require('firebase/firestore');
 
 /**
@@ -402,6 +404,7 @@ const getRecords = async (req, res) => {
 
     res.status(200).json(records);
   } catch (error) {
+    console.log(error);
     res.status(500).send({ message: error.message });
   }
 };
