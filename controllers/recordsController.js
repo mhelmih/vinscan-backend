@@ -300,6 +300,7 @@ const createRecord = async (req, res) => {
  *       500:
  *         description: Internal server error
  */
+
 const getRecords = async (req, res) => {
   try {
     const userId = req.user.uid;
@@ -325,19 +326,20 @@ const getRecords = async (req, res) => {
       });
       return;
     }
-    if ((month && !year) || (!month && year)) {
+    if (month && !year) {
       res
         .status(400)
         .send({ message: 'month and year must be provided together' });
       return;
     }
-    if (month && month < 1 && month > 12) {
+    if (month && (month < 1 || month > 12)) {
       res.status(400).send({ message: 'month must be between 1 and 12' });
       return;
     }
 
     const recordRef = collection(db, 'users', userId, 'records');
     let recordsSnapshot;
+
     if (startDate && endDate) {
       const startDateArr = startDate.split('-');
       const endDateArr = endDate.split('-');
@@ -368,9 +370,13 @@ const getRecords = async (req, res) => {
       recordsSnapshot = await getDocs(
         query(
           recordRef,
-          where('month', '==', month),
-          where('year', '==', year),
+          where('month', '==', parseInt(month)),
+          where('year', '==', parseInt(year)),
         ),
+      );
+    } else if (year) {
+      recordsSnapshot = await getDocs(
+        query(recordRef, where('year', '==', parseInt(year))),
       );
     } else {
       recordsSnapshot = await getDocs(recordRef);
@@ -392,17 +398,35 @@ const getRecords = async (req, res) => {
       );
     }
 
-    const records = [];
+    const groupedRecords = {};
+
     recordsSnapshot.forEach((doc) => {
-      records.push({
+      const data = doc.data();
+      const record = {
         id: doc.id,
-        ...doc.data(),
+        ...data,
         // Convert the createdAt field to a Date object
-        createdAt: doc.data().createdAt.toDate(),
-      });
+        createdAt: data.createdAt.toDate(),
+      };
+
+      const recordDate = new Date(data.date);
+      const monthKey = recordDate.getMonth() + 1; // Months are zero-based, so adding 1
+      const day = recordDate.getDate();
+      const recordYear = recordDate.getFullYear();
+      const dateKey = `${day}-${monthKey}-${recordYear}`;
+
+      if (!groupedRecords[monthKey]) {
+        groupedRecords[monthKey] = {};
+      }
+
+      if (!groupedRecords[monthKey][dateKey]) {
+        groupedRecords[monthKey][dateKey] = [];
+      }
+
+      groupedRecords[monthKey][dateKey].push(record);
     });
 
-    res.status(200).json(records);
+    res.status(200).json(groupedRecords);
   } catch (error) {
     console.log(error);
     res.status(500).send({ message: error.message });
@@ -522,23 +546,17 @@ const getRecords = async (req, res) => {
 const getAnnualRecords = async (req, res) => {
   try {
     const userId = req.user.uid;
-    const { year, type, category, asset } =
-      req.query;
+    const { year, type, category, asset } = req.query;
 
     if (!year || year !== 0) {
-      res
-        .status(400)
-        .send({ message: 'year is required' });
+      res.status(400).send({ message: 'year is required' });
       return;
     }
 
     const recordRef = collection(db, 'users', userId, 'records');
     let recordsSnapshot;
     recordsSnapshot = await getDocs(
-      query(
-        recordRef,
-        where('year', '==', year),
-      ),
+      query(recordRef, where('year', '==', year)),
     );
 
     if (asset) {
@@ -575,7 +593,7 @@ const getAnnualRecords = async (req, res) => {
     //         note: 'Makan siang',
     //         description: 'Makan siang di kantin',
     //         createdAt: '2021-01-01T00:00:00.000Z',
-    //       },  
+    //       },
     //     ],
     //   }
     // ]
@@ -818,7 +836,7 @@ const updateRecord = async (req, res) => {
       targetAssetRef = doc(db, 'users', userId, 'assets', data.category);
       targetAssetDoc = await getDoc(targetAssetRef);
       if (!targetAssetDoc.exists()) {
-        console.log('Target asset not found')
+        console.log('Target asset not found');
         res.status(404).send({ message: 'Target asset not found' });
         return;
       }
@@ -917,7 +935,7 @@ const updateRecord = async (req, res) => {
 
     res.status(200).send({ message: 'record updated successfully' });
   } catch (error) {
-    console.log(error)
+    console.log(error);
     res.status(500).send({ message: error.message });
   }
 };

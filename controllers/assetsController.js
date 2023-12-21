@@ -49,7 +49,11 @@ const createAsset = async (req, res) => {
   try {
     const user = req.user;
     const data = req.body;
-    if (!data.category || !data.subcategory || (!data.amount && data.amount !== 0)) {
+    if (
+      !data.category ||
+      !data.subcategory ||
+      (!data.amount && data.amount !== 0)
+    ) {
       res.status(400).send({
         message: 'category, subcategory, and amount are required',
       });
@@ -170,6 +174,7 @@ const createAsset = async (req, res) => {
  *       500:
  *         description: Internal server error
  */
+
 const getAssets = async (req, res) => {
   try {
     const user = req.user;
@@ -177,39 +182,30 @@ const getAssets = async (req, res) => {
     const assetsSnapshot = await getDocs(assetRef);
 
     if (assetsSnapshot.empty) {
-      res.status(200).json([]);
+      res.status(200).json({});
       return;
     }
 
-    const assets = [];
-    // get the assets in this format:
-    // {
-    //    'Cash': [
-    //      { id: '...', ... },
-    //      { id: '...', ... },
-    //    ],
-    //    'Bank': [
-    //      { id: '...', ... },
-    //      { id: '...', ... },
-    //    ],
-    //    'E-Wallet': [
-    //      { id: '...', ... },
-    //      { id: '...', ... },
-    //    ],
-    // }
+    const categorizedAssets = {};
+
     assetsSnapshot.forEach((doc) => {
       const data = doc.data();
-      if (!assets[data.category]) {
-        assets[data.category] = [];
-      }
-      assets[data.category].push({
+      const asset = {
         id: doc.id,
         ...data,
         // Convert the createdAt field to a Date object
         createdAt: data.createdAt.toDate(),
-      });
+      };
+
+      // Group assets by category
+      if (categorizedAssets[data.category]) {
+        categorizedAssets[data.category].push(asset);
+      } else {
+        categorizedAssets[data.category] = [asset];
+      }
     });
-    res.status(200).json(assets);
+
+    res.status(200).json(categorizedAssets);
   } catch (error) {
     res.status(500).send(error.message);
   }
@@ -335,7 +331,11 @@ const updateAsset = async (req, res) => {
     const assetId = req.params.assetId;
     const data = req.body;
 
-    if (!data.category || !data.subcategory || (!data.amount && data.amount !== 0)) {
+    if (
+      !data.category ||
+      !data.subcategory ||
+      (!data.amount && data.amount !== 0)
+    ) {
       res.status(400).send({
         message: 'category, subcategory, and amount are required',
       });
@@ -358,9 +358,9 @@ const updateAsset = async (req, res) => {
       res.status(404).send({ message: 'Asset not found' });
       return;
     }
-    
+
     await updateDoc(assetRef, data);
-    res.status(200).send({ message: 'Asset updated successfully'});
+    res.status(200).send({ message: 'Asset updated successfully' });
   } catch (error) {
     res.status(500).send({ message: error.message });
   }
