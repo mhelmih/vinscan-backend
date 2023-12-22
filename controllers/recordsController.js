@@ -307,64 +307,51 @@ const getRecords = async (req, res) => {
     const { startDate, endDate, date, month, year, type, category, asset } =
       req.query;
 
+    // Validate date inputs
     if ((!startDate && endDate) || (startDate && !endDate)) {
-      res
+      return res
         .status(400)
         .send({ message: 'startDate and endDate must be provided together' });
-      return;
     }
-    if (startDate && endDate && (date || month || year)) {
-      res.status(400).send({
-        message:
-          'startDate and endDate cannot be provided together with date, month, or year',
-      });
-      return;
-    }
+
     if (date && (month || year)) {
-      res.status(400).send({
+      return res.status(400).send({
         message: 'date cannot be provided together with month or year',
       });
-      return;
     }
+
     if (month && !year) {
-      res
+      return res
         .status(400)
         .send({ message: 'month and year must be provided together' });
-      return;
     }
+
     if (month && (month < 1 || month > 12)) {
-      res.status(400).send({ message: 'month must be between 1 and 12' });
-      return;
+      return res
+        .status(400)
+        .send({ message: 'month must be between 1 and 12' });
     }
+
+    // Convert string dates to Date objects
+    const startDateObj = startDate ? new Date(startDate) : null;
+    const endDateObj = endDate ? new Date(endDate) : null;
+    const dateObj = date ? new Date(date) : null;
 
     const recordRef = collection(db, 'users', userId, 'records');
     let recordsSnapshot;
 
-    if (startDate && endDate) {
-      const startDateArr = startDate.split('-');
-      const endDateArr = endDate.split('-');
-      const startDateObj = new Date(
-        startDateArr[2],
-        startDateArr[1] - 1,
-        startDateArr[0],
+    // Query based on provided parameters
+    if (dateObj) {
+      recordsSnapshot = await getDocs(
+        query(recordRef, where('date', '==', dateObj.toISOString())),
       );
-      const endDateObj = new Date(
-        endDateArr[2],
-        endDateArr[1] - 1,
-        endDateArr[0],
-      );
+    } else if (startDateObj && endDateObj) {
       recordsSnapshot = await getDocs(
         query(
           recordRef,
-          where('date', '>=', startDateObj),
-          where('date', '<=', endDateObj),
+          where('date', '>=', startDateObj.toISOString()),
+          where('date', '<=', endDateObj.toISOString()),
         ),
-      );
-    } else if (date) {
-      const dateArr = date.split('-');
-      const dateObj = new Date(dateArr[2], dateArr[1] - 1, dateArr[0]);
-      recordsSnapshot = await getDocs(
-        query(recordRef, where('date', '==', dateObj)),
       );
     } else if (month && year) {
       recordsSnapshot = await getDocs(
@@ -382,33 +369,30 @@ const getRecords = async (req, res) => {
       recordsSnapshot = await getDocs(recordRef);
     }
 
+    // Convert QuerySnapshot to an array of document data
+    let records = [];
+    recordsSnapshot.forEach((doc) => {
+      records.push({
+        id: doc.id,
+        ...doc.data(),
+        createdAt: doc.data().createdAt.toDate(),
+      });
+    });
+
+    // Apply additional filters if necessary
     if (asset) {
-      recordsSnapshot = recordsSnapshot.filter(
-        (doc) => doc.data().asset === asset,
-      );
+      records = records.filter((doc) => doc.asset === asset);
     }
     if (type) {
-      recordsSnapshot = recordsSnapshot.filter(
-        (doc) => doc.data().type === type,
-      );
+      records = records.filter((doc) => doc.type === type);
     }
     if (category) {
-      recordsSnapshot = recordsSnapshot.filter(
-        (doc) => doc.data().category === category,
-      );
+      records = records.filter((doc) => doc.category === category);
     }
 
+    // Grouping records
     const groupedRecords = {};
-
-    recordsSnapshot.forEach((doc) => {
-      const data = doc.data();
-      const record = {
-        id: doc.id,
-        ...data,
-        // Convert the createdAt field to a Date object
-        createdAt: data.createdAt.toDate(),
-      };
-
+    records.forEach((data) => {
       const recordDate = new Date(data.date);
       const monthKey = recordDate.getMonth() + 1; // Months are zero-based, so adding 1
       const day = recordDate.getDate();
@@ -423,206 +407,17 @@ const getRecords = async (req, res) => {
         groupedRecords[monthKey][dateKey] = [];
       }
 
-      groupedRecords[monthKey][dateKey].push(record);
+      groupedRecords[monthKey][dateKey].push(data);
     });
 
     res.status(200).json(groupedRecords);
   } catch (error) {
-    console.log(error);
+    console.error(error);
     res.status(500).send({ message: error.message });
   }
 };
 
-/**
- * @swagger
- * /api/v1/records/annual:
- *   get:
- *     summary: Get daily records in a user's account
- *     description: Get daily records in a user's account. Records can be filtered by (year, type, category, and asset).
- *     tags: [Records]
- *     security:
- *     - bearerAuth: []
- *     parameters:
- *     - in: query
- *       name: year
- *       schema:
- *         type: string
- *         example: yyyy
- *         description: Year of the records to be retrieved
- *     - in: query
- *       name: type
- *       schema:
- *         type: string
- *         enum: ["Expense", "Income", "Transfer"]
- *         description: Type of the records to be retrieved
- *     - in: query
- *       name: category
- *       schema:
- *         type: string
- *         description: Category of the records to be retrieved
- *         example: Makanan
- *     - in: query
- *       name: asset
- *       schema:
- *         type: string
- *         description: Asset of the records to be retrieved
- *         example: Cash
- *     responses:
- *       200:
- *         description: Record retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   '1':
- *                     type: array
- *                     items:
- *                       type: object
- *                       properties:
- *                         'dd-mm-yyyy':
- *                           type: array
- *                           items:
- *                             type: object
- *                             properties:
- *                               id:
- *                                 type: string
- *                                 description: Record ID
- *                                 example: 1
- *                               day:
- *                                 type: number
- *                                 description: Record day
- *                                 example: 1
- *                               month:
- *                                 type: number
- *                                 description: Record month
- *                                 example: 1
- *                               year:
- *                                 type: number
- *                                 description: Record year
- *                                 example: 2021
- *                               date:
- *                                 type: string
- *                                 format: dd-mm-yyyy
- *                                 description: Record date
- *                                 example: 01-01-2021
- *                               asset:
- *                                 type: string
- *                                 description: Asset name from which the record is created
- *                                 example: Cash
- *                               type:
- *                                 type: string
- *                                 enum: ["Expense", "Income", "Transfer"]
- *                                 description: Record type (Expense, Income, or Transfer)
- *                                 example: Expense
- *                               category:
- *                                 type: string
- *                                 description: Record category (Expense = Makanan, Kehidupan sosial, Transportasi, Kultur, Kebutuhan harian, Pakaian, Kecantikan, Kesehatan, Pendidikan, Hadiah, or Lainnya; Income = Uang saku, Gaji, Bonus, Kas kecil, or Lainnya; Transfer = Asset tujuan)
- *                                 example: Makanan
- *                               amount:
- *                                 type: number
- *                                 description: Record amount
- *                                 example: 10000
- *                               note:
- *                                 type: string
- *                                 description: Record note
- *                                 example: Makan siang
- *                               description:
- *                                 type: string
- *                                 description: Record description
- *                                 example: Makan siang di kantin
- *                               createdAt:
- *                                 type: string
- *                                 format: date-time
- *                                 description: Record creation date
- *                                 example: 2021-01-01T00:00:00.000Z
- *       400:
- *         description: Bad request
- *       500:
- *         description: Internal server error
- */
-const getAnnualRecords = async (req, res) => {
-  try {
-    const userId = req.user.uid;
-    const { year, type, category, asset } = req.query;
-
-    if (!year || year !== 0) {
-      res.status(400).send({ message: 'year is required' });
-      return;
-    }
-
-    const recordRef = collection(db, 'users', userId, 'records');
-    let recordsSnapshot;
-    recordsSnapshot = await getDocs(
-      query(recordRef, where('year', '==', year)),
-    );
-
-    if (asset) {
-      recordsSnapshot = recordsSnapshot.filter(
-        (doc) => doc.data().asset === asset,
-      );
-    }
-    if (type) {
-      recordsSnapshot = recordsSnapshot.filter(
-        (doc) => doc.data().type === type,
-      );
-    }
-    if (category) {
-      recordsSnapshot = recordsSnapshot.filter(
-        (doc) => doc.data().category === category,
-      );
-    }
-
-    let records = [];
-    // return the records with this format
-    // [
-    //   '1': {
-    //     'dd-mm-yyyy': [
-    //       {
-    //         id: 'recordId',
-    //         day: 1,
-    //         month: 1,
-    //         year: 2021,
-    //         date: '01-01-2021',
-    //         asset: 'Cash',
-    //         type: 'Expense',
-    //         category: 'Makanan',
-    //         amount: 10000,
-    //         note: 'Makan siang',
-    //         description: 'Makan siang di kantin',
-    //         createdAt: '2021-01-01T00:00:00.000Z',
-    //       },
-    //     ],
-    //   }
-    // ]
-    recordsSnapshot.forEach((doc) => {
-      const record = {
-        id: doc.id,
-        ...doc.data(),
-        // Convert the createdAt field to a Date object
-        createdAt: doc.data().createdAt.toDate(),
-      };
-      const date = record.date;
-      const dateArr = date.split('-');
-      const month = dateArr[1];
-
-      if (!records[month]) {
-        records[month] = {};
-      }
-      if (!records[month][date]) {
-        records[month][date] = [];
-      }
-      records[month][date].push(record);
-    });
-
-    res.status(200).json(records);
-  } catch (error) {
-    res.status(500).send({ message: error.message });
-  }
-};
-
+// Get a record in a user's account
 /**
  * @swagger
  * /api/v1/records/{recordId}:
@@ -997,7 +792,6 @@ const deleteRecord = async (req, res) => {
 module.exports = {
   createRecord,
   getRecords,
-  getAnnualRecords,
   getRecord,
   updateRecord,
   deleteRecord,
